@@ -1,4 +1,3 @@
-# -*- eval: (auto-fill-mode 1) -*-
 #+TITLE Fundamental Software Architecture
 #+AUTHOR Marvin Dostal
 #+LANGUAGE en_us
@@ -11,6 +10,8 @@ This document aims to communicate the fundamentals of software architecture in a
 
 If you have already worked a lot with software, this document might seem unnecessary or obvious to you.
 However, I do think it is important to express in concrete words what I have learned over the years with regards to what software architecture really means in practice.
+I do not claim that this is the one valid way to look at software.
+However, I do think it is a very useful view.
 
 The topic of software architecture often-times feels like an object that whenever tried to be grabbed, it will just float away:
 making it impossible to to clearly communicate.
@@ -28,44 +29,59 @@ however, in my experience this can usually be solved by looking at the specific 
 
 One principle to keep in mind to keep performance high is when processing data to process as much as possible in batches as this helps with:
 - sharing computation results across the system
-  * as opposed to calculating the same thing over and over for a slightly different context
+  - as opposed to calculating the same thing over and over for a slightly different context
 - hardware access can be combined
-  * as opposed to doing every hardware access sequentially
+  - as opposed to doing every hardware access sequentially
 - if the data to be processed and the result memory are coherent memory blocks, CPU caches works optimally
-  * as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for cache-lines to be filled
+  - as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for cache-lines to be filled
 - parallelization can be implemented to work on multiple elements of the batch in parallel
-  * as opposed to doing everything sequentially
+  - as opposed to doing everything sequentially
 - etc.
 
 Sometimes these performance improvements introduce additional complexity into the software architecture and code.
 This complexity could have been avoided by completely rearchitecting the software.
 However, in practice the trade-off of (hopefully) slightly more complicated code, but finishing a project, is better than throwing everything away and constantly starting anew.
 
-* fundamental-software-architecture
+* Fundamental Software Architecture
 
 ** The two kinds of code: Platform and Application
 
-#+BEGIN_COMMENT
-Two different kind of code:
-- Platform code
-- Application code
+When looking at most software systems, it is possible to categorize code based on its purpose:
+- Platform ::
+  Code that provides an abstraction for an Application layer above.
+  Can abstract a lot or directly forward to an Application layer below.
+  Platforms can exist that do not trigger any side-effects.
+- Application ::
+  Code that that will do the actual business logic and trigger side-effects, i.e., the code deciding which side-effects shall be triggered.
+  The Application code will make sure that a specific problem is solved for the user. A user can be a human, or a Platform that sits on-top.
 
-Describe Platform code
-Describe Application code
+Note that the lowest layer (the code that triggers useful side effects) of Platform code, can be categorized as Application code.
+It will use a Platform or unabstracted hardware access to implement its side-effects.
+Note that Platforms can exist that do not have side-effects; e.g., if only fully functional helper functions are provided.
+One could argue for example argue that programming languages (when excluding their standard library) are such platforms.
 
-How to identify Platform and Application. Based on the perspective there can be "application code" in the "platform".
-The lowest part of a Platform is always an Application layer.
+E.g., software often times follows a structure like:
 
-Fundamental question is: "When to introduce an (additional) Platform layer."
+[[./SoftwareApplicationsAndPlatforms.drawio.svg]]
 
-#+END_COMMENT
+
+When simplifying systems to Platform and Applications code, the fundamental task of doing software architecture can be described as:
+"When do we need to introduce an (additional) Platform layer?"
+
+*** Examples
 
 ** Dependency inversion
 
-#+BEGIN_COMMENT
-Important to prevent cyclic dependencies.
-Without this idea, it is basically impossible to have clearly layered software, or even knowing who depends on what.
-#+END_COMMENT
+To be able to structure code in layers, it necessary to prevent cyclic dependencies.
+The concept of dependency inversion is often used as one of the primary techniques to resolve these cyclic dependencies.
+
+The idea is to introduce an interface in the upper layer, which can be implemented via the lower levels to provide custom logic.
+E.g., the hook interface is provided by the Platform, but is then implemented via Application code.
+
+For the upper layer to find implemented hooks, manual registration (dependency injection) can be implemented, however, frameworks providing more automatic dependency injection are extremly popular.
+The dependency injection frameworks allow querying for implementations of a specific interface.
+
+*** Examples
 
 ** Managing side effects
 
@@ -82,17 +98,29 @@ Mention command pattern to "cheat" the system: I don't think it helps very much,
 Can have nice performance properties: prepare everything (hopefully exactly once), and then execute it repetedly very fast!
 #+END_COMMENT
 
+Software that has no side-effects is useless.
+The side-effects are the end-all of software.
+It therefore is important to identify and understand the side-effect in the code.
+
+The general guideline is that side-effects shall happen as high as possible in the call stack of the respective Platform / Application layer.
+
+*** Related: command pattern
+
+It is possible to cheat and put the side-effects even higher in the call-stack: the command pattern can be used.
+I.e., objects can be prepared (which can have arbitrarily deep call-stacks) that are then directly triggered by a layer further up.
+
+While this can be a nice pattern for improving performance, I don't think that this particularly helps with understandability of code.
+
+*** Examples
+
 ** Rule of 7
 
-#+BEGIN_COMMENT
-Millers law states that humans can hold about 7 things in their mind at the same time.
+Humans can generally hold about 7 things in their mind at the same time.
+Translated into the software world, this means that we should ensure that code should not depend/interact with more then 7 other separate systems.
+Fundamental software entities (e.g., standard library, or systems that are used all over the codebase) are not counted.
+Additionally, a single "system" can also be a collection of similar working code; make sure that it is easy to see when something belongs to such a system, e.g., bundling them into a common namespace.
 
-Therefore, ensure that a given software entity should not depend/interact with more than 7 other software entities.
-Entity: i.e., class, interfaces, (module) namespace/header, shared-library, component package, ...
-Fundamental software entities (e.g., standard library, or systems that are used all over) are not counted.
-When working with a codebase, one will get used to them.
-#+END_COMMENT
-
+*** Examples
 
 * Appendix A Interfaces
 
