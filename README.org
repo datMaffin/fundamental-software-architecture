@@ -134,7 +134,14 @@ It can basically appear in any kind of programming environment.
 
 ** Abstract product
 
-* Appendix C Additional principles to remember and live:
+* Appendix C Additional principles to remember and live by:
+
+** KISS
+
+Keep it simple, stupid.
+This is harder to do than it sounds.
+Counterintuitively, implementing a complex solution is often times a lot easier.
+Don't have pride in building complex solutions, have pride in building simple (as possible) solutions for complex problems!
 
 ** SOLID
 
@@ -146,13 +153,6 @@ The "I" even made it into my list.
 ** Interfaces should be easy to use and hard to misuse
 
 /See title./
-
-** KISS
-
-Keep it simple, stupid.
-This is harder to do than it sounds.
-Counterintuitively, implementing a complex solution is often times a lot easier.
-Don't have pride in building complex solutions, have pride in building simple (as possible) solutions for complex problems!
 
 * Appendix Z just want to read more
 
