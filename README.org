@@ -44,63 +44,55 @@ However, in practice the trade-off of (hopefully) slightly more complicated code
 
 * Fundamental Software Architecture
 
-** The two kinds of code: Platform and Application
+** The two kinds of code: Application and Infrastructure
 
 When looking at most software systems, it is possible to categorize code based on its purpose:
-- Platform ::
-  Code that provides an abstraction for an Application layer above.
-  Can abstract a lot or directly forward to an Application layer below.
-  Platforms can exist that do not trigger any side-effects.
-- Application ::
+- Application "What? And When?" ::
   Code that that will do the actual business logic and trigger side-effects, i.e., the code deciding which side-effects shall be triggered.
   The Application code will make sure that a specific problem is solved for the user. A user can be a human, or a Platform that sits on-top.
+- Infrastructure "How?" ::
+  Code doing boilerplate things necessary for correct and efficient execution of Application code.
 
-Note that the lowest layer (the code that triggers useful side effects) of Platform code, can be categorized as Application code.
-It will use a Platform or unabstracted hardware access to implement its side-effects.
-Note that Platforms can exist that do not have side-effects; e.g., if only fully functional helper functions are provided.
-One could argue for example argue that programming languages (when excluding their standard library) are such platforms.
+Additionally, Interfaces connecting the code layers are necessary.
 
-E.g., software often times follows a structure like:
+I.e., software can be described as:
 
-[[./SoftwareApplicationsAndPlatforms.drawio.svg]]
+[[./SoftwareAppAndInfra.drawio.svg]]
 
-
-When simplifying systems to Platform and Applications code, the fundamental task of doing software architecture can be described as:
-"When do we need to introduce an (additional) Platform layer?"
+When viewing software in terms of Application, Infrastructure and Interfaces, the fundamental task of doing software architecture can be described as:
+When to introduce an additional layer with interfaces, and who should own the interfaces?
 
 *** Examples
 
 ** Dependency inversion
 
-To be able to structure code in layers, it necessary to prevent cyclic dependencies.
-The concept of dependency inversion is often used as one of the primary techniques to resolve these cyclic dependencies.
+A conceptually lower level commonly wants to have access to and use the upper layer.
+To prevent cyclic dependencies, it is now necessary to use dependency inversion:
+if the lower level needs to implement an interface for custom code execution, the interface needs to owned by the upper layer.
 
-The idea is to introduce an interface in the upper layer, which can be implemented via the lower levels to provide custom logic.
-E.g., the hook interface is provided by the Platform, but is then implemented via Application code.
-
-For the upper layer to find implemented hooks, manual registration (dependency injection) can be implemented, however, frameworks providing more automatic dependency injection are extremly popular.
+For the upper layer to find implemented hooks, manual registration (dependency injection) can be implemented, however, frameworks providing more automatic dependency injection are very popular.
 The dependency injection frameworks allow querying for implementations of a specific interface.
 
-*** Examples
+Because dependency inversion is very popular of allowing lower layers to provide custom logic, systems often feel like they basically only consist out of hooks that are calling other hooks that coll other hooks etc.
+A good practice too keep an overview is that a hook should usually be used either for Platform or Application logic, but not both.
+Note that the implementation might provide an additional hook; this hook can again be either for Platform or Application logic.
+All interface definitions count as Platform code.
+
+*** Example
+
+Many frameworks provide a way of dependency injection.
+One such group of frameworks are component frameworks:
+these frameworks generally allow the registering of services implementing interfaces.
+Component packages can be loaded, which will fill the registry of the component framework providing a way to instantiate services that implement a specific interface.
+
+E.g., the Platform code can provide a "hook" interface that can be implementated by the Application code.
+When loading the Application code into the component framework, the Platform is able to find the implementations by asking for implementers of its "hook" interface.
 
 ** Managing side effects
 
-#+BEGIN_COMMENT
-Only useless applications have no side-effects.
-
-Having side-effects happen high in the call stack.
-Why I think this is a good idea.
-
-Application layer code should have the side-effects as high as possible.
-Also for the platform layer, hooks that are called that are expected to have side effects should be high in the platform layer call stack.
-
-Mention command pattern to "cheat" the system: I don't think it helps very much, but I also don't think it is horrible.
-Can have nice performance properties: prepare everything (hopefully exactly once), and then execute it repetedly very fast!
-#+END_COMMENT
-
 Software that has no side-effects is useless.
 The side-effects are the end-all of software.
-It therefore is important to identify and understand the side-effect in the code.
+It therefore is important to identify and understand the side-effect of the software.
 
 The general guideline is that side-effects shall happen as high as possible in the call stack of the respective Platform / Application layer.
 
@@ -111,7 +103,12 @@ I.e., objects can be prepared (which can have arbitrarily deep call-stacks) that
 
 While this can be a nice pattern for improving performance, I don't think that this particularly helps with understandability of code.
 
-*** Examples
+*** Example
+
+Following this guideline will help with being able to program in a more (fully) functional way:
+Because the side-effects happen already at the top, any kind of data processing and preparation of inputs for the side-effect can be implemented in a fully-functional way.
+
+Fully-functional code has the advantage of being easier to document, understand and test.
 
 ** Rule of 7
 
@@ -122,6 +119,28 @@ Additionally, a single "system" can also be a collection of similar working code
 
 *** Examples
 
+**** Architectural entities
+
+When describing the building block view of a specific software, one starts with the whole system, there should now only be about 7 systems that together this system.
+Each of those systems should at most consist of about about 7 systems again, etc.
+(Excluding basic dependencies that are part of the base system upon which everything is built.)
+
+**** Code
+
+There should only be 7 systems that are injected via dependency injection in a given class.
+(Not counting systems that are very fundamental and basically used everyhwere.)
+
+If there are too many dependencies,
+Facades can be introduced that bundle systems and provide a more easily useable system.
+
+* Conclusion
+
+These concept should be able to be mapped onto any software.
+With these concepts in mind, the resulting software should already be pretty scalable in terms of complexity and people working on it.
+Note that the whole process is often times iterative: i.e., only introduce platforms after discovering that they are needed.
+Planning everything up-front is very hard to do. If the project is small: just start.
+If the project is significant: prototype concepts and decide based on the experience with the prototype for good boundary layer between the Application and Platform.
+
 * Appendix A Interfaces
 
 #+BEGIN_COMMENT
@@ -129,6 +148,22 @@ Describe what an interface is in software.
 It is not an OOP term!
 It can basically appear in any kind of programming environment.
 #+END_COMMENT
+
+Software interfaces exist in various forms:
+- files and file formats,
+- (file/internet) sockets and the various protocols built on top of them
+- standard input / output
+- C-ABI linking
+- various interface descriptions in the given programming language
+- duck-typing in more dynamic programming languages
+- language independent interface descriptions for use with inter-process communication (for example implemented via a socket)
+- etc.
+
+Note that basically any programming language, no matter the paradigmas they support, can be used to provide a generally useable interface.
+However, specific programming environments are better with interfacing between each other.
+E.g., a pure C++ programming environment where everything is always re-compiled can directly use C++ ABI via C++ header file descriptions, allowing to use all concepts of C++ for describing interfaces.
+If different programming environments want to interface with each other, more generic or complicated interface formats need to be used,
+often requiring large amounts of boilerplate and/or Platform code to make using it "feel good".
 
 * Appendix B Application, Platform Examples
 
