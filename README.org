@@ -1,0 +1,137 @@
+# -*- eval: (auto-fill-mode 1) -*-
+#+TITLE Fundamental Software Architecture
+#+AUTHOR Marvin Dostal
+#+LANGUAGE en_us
+
+* Goal
+
+This document aims to communicate the fundamentals of software architecture in a succinct but easy to understand way.
+
+* (Optional) Introduction of the context
+
+If you have already worked a lot with software, this document might seem unnecessary or obvious to you.
+However, I do think it is important to express in concrete words what I have learned over the years with regards to what software architecture really means in practice.
+
+The topic of software architecture often-times feels like an object that whenever tried to be grabbed, it will just float away:
+making it impossible to to clearly communicate.
+Very long books exist that talk and talk about this topic.
+However, they are too long as to keep all the information in the brain.
+
+This document will try to describe only very few concepts that IMHO are already sufficient to understand how "good" software is usually structured.
+"good" in the context of this document is primarily concerned with /understandability/ and /maintainability/.
+
+** Why I don't think this document needs to go into details for "performance"
+
+While performance is an important part of "good" software, it usually is already good enough by keeping things simple.
+It can be true that a chosen architecture, which follows the details described here, can have horrible performance,
+however, in my experience this can usually be solved by looking at the specific locations that slow everything down and optimizing them.
+
+One principle to keep in mind to keep performance high is when processing data to process as much as possible in batches as this helps with:
+- sharing computation results across the system
+  * as opposed to calculating the same thing over and over for a slightly different context
+- hardware access can be combined
+  * as opposed to doing every hardware access sequentially
+- if the data to be processed and the result memory are coherent memory blocks, CPU caches works optimally
+  * as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for cache-lines to be filled
+- parallelization can be implemented to work on multiple elements of the batch in parallel
+  * as opposed to doing everything sequentially
+- etc.
+
+Sometimes these performance improvements introduce additional complexity into the software architecture and code.
+This complexity could have been avoided by completely rearchitecting the software.
+However, in practice the trade-off of (hopefully) slightly more complicated code, but finishing a project, is better than throwing everything away and constantly starting anew.
+
+* fundamental-software-architecture
+
+** The two kinds of code: Platform and Application
+
+#+BEGIN_COMMENT
+Two different kind of code:
+- Platform code
+- Application code
+
+Describe Platform code
+Describe Application code
+
+How to identify Platform and Application. Based on the perspective there can be "application code" in the "platform".
+The lowest part of a Platform is always an Application layer.
+
+Fundamental question is: "When to introduce an (additional) Platform layer."
+
+#+END_COMMENT
+
+** Dependency inversion
+
+#+BEGIN_COMMENT
+Important to prevent cyclic dependencies.
+Without this idea, it is basically impossible to have clearly layered software, or even knowing who depends on what.
+#+END_COMMENT
+
+** Managing side effects
+
+#+BEGIN_COMMENT
+Only useless applications have no side-effects.
+
+Having side-effects happen high in the call stack.
+Why I think this is a good idea.
+
+Application layer code should have the side-effects as high as possible.
+Also for the platform layer, hooks that are called that are expected to have side effects should be high in the platform layer call stack.
+
+Mention command pattern to "cheat" the system: I don't think it helps very much, but I also don't think it is horrible.
+Can have nice performance properties: prepare everything (hopefully exactly once), and then execute it repetedly very fast!
+#+END_COMMENT
+
+** Rule of 7
+
+#+BEGIN_COMMENT
+Millers law states that humans can hold about 7 things in their mind at the same time.
+
+Therefore, ensure that a given software entity should not depend/interact with more than 7 other software entities.
+Entity: i.e., class, interfaces, (module) namespace/header, shared-library, component package, ...
+Fundamental software entities (e.g., standard library, or systems that are used all over) are not counted.
+When working with a codebase, one will get used to them.
+#+END_COMMENT
+
+
+* Appendix A Interfaces
+
+#+BEGIN_COMMENT
+Describe what an interface is in software.
+It is not an OOP term!
+It can basically appear in any kind of programming environment.
+#+END_COMMENT
+
+* Appendix B Application, Platform Examples
+
+** Abstract product
+
+* Appendix C Additional principles to remember and live:
+
+** SOLID
+
+Whenever I think about the SOLID principles, I do find them surprisingly relevant.
+I think it is worth while to also remember and live them.
+
+The "I" even made it into my list.
+
+** Interfaces should be easy to use and hard to misuse
+
+/See title./
+
+** KISS
+
+Keep it simple, stupid.
+This is harder to do than it sounds.
+Counterintuitively, implementing a complex solution is often times a lot easier.
+Don't have pride in building complex solutions, have pride in building simple (as possible) solutions for complex problems!
+
+* Appendix Z just want to read more
+
+Note that the listed resources do not necessarily relate to what is written here.
+There is even a chance that they try to contradict some information of this document.
+However, if you like reading about this topic, here are some more resources.
+
+- Tiger beetle design
+- Google SWEngineering https://abseil.io/resources/swe-book/html/toc.html
+- https://stacktower.io dependency visualization
