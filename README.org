@@ -1,59 +1,60 @@
-#+TITLE Fundamental Software Architecture
-#+AUTHOR Marvin Dostal
-#+LANGUAGE en_us
+#+TITLE: Fundamental Software Architecture
+#+AUTHOR: Marvin Dostal
+#+LANGUAGE: en_us
 
 * Goal
 
 This document aims to communicate the fundamentals of software architecture in a succinct but easy to understand way.
 
-* (Optional) Introduction of the context
+* (Optional) Introduction
 
-If you have already worked a lot with software, this document might seem unnecessary or obvious to you.
-However, I do think it is important to express in concrete words what I have learned over the years with regards to what software architecture really means in practice.
-I do not claim that this is the one valid way to look at software.
-However, I do think it is a very useful view.
+If one is already very experienced with creating software, this document might seem unnecessary or obvious.
+However, I do think it is important to try to express what I have learned over the years.
+I do not claim that this is the one valid way to look at software architecture.
+However, I do hope it is a useful view.
 
-The topic of software architecture often-times feels like an object that whenever tried to be grabbed, it will just float away:
-making it impossible to to clearly communicate.
-Very long books exist that talk and talk about this topic.
-However, they are too long as to keep all the information in the brain.
+The topic of software architecture often-times feels impossible to put into words:
+making it hard to write down the fundamentals.
+Long books exist that write about this topic.
+However, they are trying to cover the topic to extensive, e.g., they are trying to go over every edge cases.
+It is too difficult to keep all the information of those resources in the active memory.
 
 This document will try to describe only very few concepts that IMHO are already sufficient to understand how "good" software is usually structured.
 "good" in the context of this document is primarily concerned with /understandability/ and /maintainability/.
 
-** Why I don't think this document needs to go into details for "performance"
+** Why "performance" is omitted
 
-While performance is an important part of "good" software, it usually is already good enough by keeping things simple.
+While performance is an important part of "good" software, software is usually already good enough when keeping things simple.
 It can be true that a chosen architecture, which follows the details described here, can have horrible performance,
 however, in my experience this can usually be solved by looking at the specific locations that slow everything down and optimizing them.
 
-One principle to keep in mind to keep performance high is when processing data to process as much as possible in batches as this helps with:
-- sharing computation results across the system
+One principle to keep in mind for good performance is to process data in batches. This is beneficial for:
+- sharing computation results
   - as opposed to calculating the same thing over and over for a slightly different context
 - hardware access can be combined
   - as opposed to doing every hardware access sequentially
-- if the data to be processed and the result memory are coherent memory blocks, CPU caches works optimally
-  - as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for cache-lines to be filled
-- parallelization can be implemented to work on multiple elements of the batch in parallel
+- if the data to be processed and the result memory are coherent memory blocks, CPU caches work efficient
+  - as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for fetching the data into the cache
+- parallelization can be introduced more easily to work on multiple elements of the batch in parallel
   - as opposed to doing everything sequentially
 - etc.
 
 Sometimes these performance improvements introduce additional complexity into the software architecture and code.
-This complexity could have been avoided by completely rearchitecting the software.
-However, in practice the trade-off of (hopefully) slightly more complicated code, but finishing a project, is better than throwing everything away and constantly starting anew.
+This complexity can often be avoided by completely rearchitecting the software.
+However, in practice the trade-off of (usually) slightly more complicated code is better than throwing everything away and constantly starting anew; and never finishing the software.
 
 * Fundamental Software Architecture
 
-** The two kinds of code: Application and Infrastructure
+** Application, Infrastructure and Interface Code
 
-When looking at most software systems, it is possible to categorize code based on its purpose:
-- Application "What? And When?" ::
-  Code that that will do the actual business logic and trigger side-effects, i.e., the code deciding which side-effects shall be triggered.
+When looking at software systems, it is possible to categorize its code based on its purpose:
+- Application ::
+  Code that will do the actual business logic and trigger side-effects, i.e., the code deciding which side-effects shall be triggered.
   The Application code will make sure that a specific problem is solved for the user. A user can be a human, or a Platform that sits on-top.
-- Infrastructure "How?" ::
-  Code doing boilerplate things necessary for correct and efficient execution of Application code.
-
-Additionally, Interfaces connecting the code layers are necessary.
+- Infrastructure ::
+  Code that is implementing logic necessary for correct and efficient execution of Application code.
+- Interfaces ::
+  Description of how the code layer are able to interact.
 
 I.e., software can be described as:
 
