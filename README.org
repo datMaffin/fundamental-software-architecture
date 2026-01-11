@@ -24,11 +24,11 @@ This document will try to describe only very few concepts that IMHO are already 
 
 ** Why "performance" is omitted
 
-While performance is an important part of "good" software, software is usually already good enough when keeping things simple.
+While performance is an important part of "good" software, software performance is usually already good enough when keeping things simple.
 It can be true that a chosen architecture, which follows the details described here, can have horrible performance,
 however, in my experience this can usually be solved by looking at the specific locations that slow everything down and optimizing them.
 
-One principle to keep in mind for good performance is to process data in batches. This is beneficial for:
+One main principle to keep in mind for good performance is to process data in batches. This is beneficial for:
 - sharing computation results
   - as opposed to calculating the same thing over and over for a slightly different context
 - hardware access can be combined
@@ -39,31 +39,96 @@ One principle to keep in mind for good performance is to process data in batches
   - as opposed to doing everything sequentially
 - etc.
 
-Sometimes these performance improvements introduce additional complexity into the software architecture and code.
+Oftentimes the various performance improvements introduce additional complexity into the software architecture and code.
 This complexity can often be avoided by completely rearchitecting the software.
-However, in practice the trade-off of (usually) slightly more complicated code is better than throwing everything away and constantly starting anew; and never finishing the software.
+However, in practice the trade-off of (usually slightly) more complicated code is better than throwing everything away and constantly starting anew.
 
 * Fundamental Software Architecture
 
-** Application, Infrastructure and Interface Code
+** Architectural layering and organization
 
-When looking at software systems, it is possible to categorize its code based on its purpose:
-- Application ::
-  Code that will do the actual business logic and trigger side-effects, i.e., the code deciding which side-effects shall be triggered.
-  The Application code will make sure that a specific problem is solved for the user. A user can be a human, or a Platform that sits on-top.
-- Infrastructure ::
-  Code that is implementing logic necessary for correct and efficient execution of Application code.
-- Interfaces ::
-  Description of how the code layer are able to interact.
+*** Responsibilities
 
-I.e., software can be described as:
+When looking at software systems, it has responsibilities, i.e., things it wants to accomplish.
+It is usually good if a responsibility is implemented by a tight set of source code;
+e.g.,
+files that live in the same folder,
+code that is contained in a namespace,
+code that is contained in a class,
+etc.
 
-[[./SoftwareAppAndInfra.drawio.svg]]
+Note that responsibilities can be thought of in high or low abstraction;
+e.g.,
+start the rocket (high abstraction),
+flip the bit that that starts ignition (low abstraction).
+The art of architecting is to identify a responsiblity and decide how to model them in the software.
+Note that pulling out responsibilities of too low of an abstraction into separate code can make the code unnecessarily fragemented, making it hard to understand the code.
+The architect should additionally take into considerations that requirements cna change, or new requirements can come into existence:
+therefore - usually - the responsibilites might change or increase.
+While the written code can usually never be perfectly prepared, a certain structuring of the code should help with being able to identify
 
-When viewing software in terms of Application, Infrastructure and Interfaces, the fundamental task of doing software architecture can be described as:
-When to introduce an additional layer with interfaces, and who should own the interfaces?
 
-*** Examples
+(Fictional) example for responsibility to code abstraction:
+- /Responsiblity/ :: /code abstraction/
+- start the rocket :: various programs that all work together
+- control the boosters :: a program
+- real-time framework for allowing to work down tasks :: a libary with extension points that allows other code to use it
+- control the fuel intake :: a high-level namespace with various folders and source code files within
+- decide how much power output is needed :: a folder with various files that live in a namespace containing various classes
+- decide how much fuel and the exact mixture is needed for the current conditions :: maybe a mix of structs for inputs, and a bunch of functions (could also be modelled as a class)
+- control the valves :: a function that takes care of talking with the hardware
+- checking whether the hardware access was working :: an if condition that will trigger corresponding code
+- doing the hardware access to move the valve :: assigning a value to a (memory-mapped) variable
+
+*** Layering
+
+In addition to implementing responsibilities in the code, the stategy of of describing the layering various code / libraries / programs is an extremely popular.
+The reason for why libraries can be viewed as layers is that one of the fundamental rules is to keep the "uses" dependencies acyclic.
+Because this property, software can be described as a tree, or as layers on top of each other.
+
+I.e., code must never depend on code, which in turn is depending on the first.
+An example for a cyclic dependency would be: the calculation of the fuel intake is calling the code for the control valves to change it directly if it senses that something is not alright,
+while the code controlling the valve is calling directly into the fuel intake calculation to control its valves.
+
+Code that has cyclic dependencies on each other is hard to understand; e.g., in this example what happens if the two implementations disagree on how the valves should be set? Who will win?
+
+The solution is to decide who will depend on whom:
+1. The fuel intake can depend on the valve control.
+   
+   E.g., the fuel intake calculation will call into the valve control and pass along its values with a way to communicate extreme situations.
+   
+   However, this does not really "feel" like a natural way; the fuel intake calculation should probably not be responsible for triggering when exactly the valves should change.
+   
+   An alternative implementation would be that the fuel intake calculation will encapsulate itself into a callable object.
+   The interface of the callable object would be provided by the valve control.
+   This callable object could then be registered with the valve control.
+   The valve control would then be able to request a fuel intake calculation whenever it wants.
+
+   The alternative is an example for "Dependency inversion"; there is a dedicated section for it.
+2. The valve control can depend on fuel intake.
+   E.g., hte valve control will call into the fuel intake calculation such that it can decide how to control the valves.
+
+Exactly how the two systems interact can be modelled in a variety of interfaces.
+Note that the interface can either be owned by either system, or even be an externally defined interface.
+Because we want to avoid acyclic dependencies, it is not allowed for interfaces to be owned by both interacting systems:
+If both systems would own the interfaces that are used for them to interact with each other, both systems would depend on each other!
+
+The interface to be used depends on how the two systems want to interact.
+In this context the form of the interface can be:
+- C(++)-ABI via a symbol name :: that is linked; directly calling the function.
+  In the source code this would mean that the caller directly calls the implementation.
+- Providing function pointers :: e.g., via structs that are filled out and passed along, or virtual function table that usually underly the various "interface" concepts that exist in programming languages.
+- Writing / reading a file :: the format of the file is usually well defined
+- Calling a program :: stdout and stdin could be used to communicate data
+- Making an http request or providing an http server :: similar would be other protocols based on sockets.
+  The sockets can either transport the data between processes running on the same computer, or between processes running on different computers.
+  (In theory also different threads could communicate via a socket; however, usually for threads in a process, there are more efficient ways to communicate.)
+- Write / read a global variable in the process :: all the running code within the code can see the global variables.
+- etc. :: there is an almost unlimited way of thinking of possible interfaces that can be used by code to communicate.
+  See also Appendix A.
+
+The code architects are deciding how to layer, and closely coupled, which interfaces are needed / used for the layers to communicate.
+
 
 ** Dependency inversion
 
@@ -95,7 +160,9 @@ Software that has no side-effects is useless.
 The side-effects are the end-all of software.
 It therefore is important to identify and understand the side-effect of the software.
 
-The general guideline is that side-effects shall happen as high as possible in the call stack of the respective Platform / Application layer.
+The general guideline is that side-effects shall happen as high as possible in the call stack of the respective Platform + Application layer.
+While the Platform is not responsible for directly triggering the side effects the customer cares about, it can still trigger internal side effects.
+E.g., the Platform code could implement the caching of some information for better performance.
 
 *** Related: command pattern
 
@@ -156,6 +223,10 @@ Software interfaces exist in various forms:
 - standard input / output
 - C-ABI linking
 - various interface descriptions in the given programming language
+  * Function pointers in a struct.
+  * C++ classes.
+  * Java interfaces.
+  * Etc.
 - duck-typing in more dynamic programming languages
 - language independent interface descriptions for use with inter-process communication (for example implemented via a socket)
 - etc.
