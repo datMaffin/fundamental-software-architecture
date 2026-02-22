@@ -134,7 +134,7 @@ In this context the form of the interface can be:
   (In theory also different threads could communicate via a socket; however, usually for threads in a process, there are more efficient ways to communicate.)
 - Write / read a global variable in the process :: all the running code within the code can see the global variables.
 - etc. :: there is an almost unlimited way of thinking of possible interfaces that can be used by code to communicate.
-  See also Appendix A.
+  See also "Appendix A Interfaces".
 
 The code architects are deciding how to layer, and which interfaces are needed / used for the layers to communicate.
 Note that the choice of layering can influence the interface design and vice-versa.
@@ -149,10 +149,9 @@ if the lower level needs to implement an interface for custom code execution, th
 For the upper layer to find implemented hooks, manual registration (dependency injection) can be implemented, however, frameworks providing more automatic dependency injection are very popular.
 The dependency injection frameworks allow querying for implementations of a specific interface.
 
-Because dependency inversion is very popular of allowing lower layers to provide custom logic, systems often feel like they basically only consist out of hooks that are calling other hooks that coll other hooks etc.
-A good practice too keep an overview is that a hook should usually be used either for Platform or Application logic, but not both.
-Note that the implementation might provide an additional hook; this hook can again be either for Platform or Application logic.
-All interface definitions count as Platform code.
+Because dependency inversion is very popular of allowing lower layers to provide custom logic, software systems can often feel like they basically only consist out of hooks calling other hooks that call other hooks etc.
+A good practice to keep an overview a hook should have a well defined responsibility that is neither too narrow (which would require even more hooks) nor too wide (which would require the implementer to do a lot of unrelated things).
+Note that the implementation might expose a hook of its own; for example to allow further specialization by other code using it.
 
 *** Example
 
@@ -161,23 +160,22 @@ One such group of frameworks are component frameworks:
 these frameworks generally allow the registering of services implementing interfaces.
 Component packages can be loaded, which will fill the registry of the component framework providing a way to instantiate services that implement a specific interface.
 
-E.g., the Platform code can provide a "hook" interface that can be implementated by the Application code.
-When loading the Application code into the component framework, the Platform is able to find the implementations by asking for implementers of its "hook" interface.
 
 ** Managing side effects
 
 Software that has no side-effects is useless.
 The side-effects are the end-all of software.
-It therefore is important to identify and understand the side-effect of the software.
+It therefore is important to identify and understand the side-effect of the code.
 
-The general guideline is that side-effects shall happen as high as possible in the call stack of the respective Platform + Application layer.
-While the Platform is not responsible for directly triggering the side effects the customer cares about, it can still trigger internal side effects.
-E.g., the Platform code could implement the caching of some information for better performance.
+The general guideline is that side-effects shall happen as high as possible in the call stack.
+This is helping with understanding what specific code (e.g., a function) is trying to do;
+if the side-effect of a function is hidden in a helper function of a helper function, a side-effect can easily be missed.
+While documenting the function can help, documentation can be wrong, incomplete or just plain missing, while the source code is the truth.
 
 *** Related: command pattern
 
-It is possible to cheat and put the side-effects even higher in the call-stack: the command pattern can be used.
-I.e., objects can be prepared (which can have arbitrarily deep call-stacks) that are then directly triggered by a layer further up.
+It is possible to cheat and put the side-effects arbitrarily high in the call-stack: the command pattern can be used.
+I.e., objects can be prepared (the preparation can have arbitrarily deep call-stacks) for which the side-effect is then triggered by a layer further up.
 
 While this can be a nice pattern for improving performance, I don't think that this particularly helps with understandability of code.
 
@@ -245,11 +243,7 @@ Note that basically any programming language, no matter the paradigmas they supp
 However, specific programming environments are better with interfacing between each other.
 E.g., a pure C++ programming environment where everything is always re-compiled can directly use C++ ABI via C++ header file descriptions, allowing to use all concepts of C++ for describing interfaces.
 If different programming environments want to interface with each other, more generic or complicated interface formats need to be used,
-often requiring large amounts of boilerplate and/or Platform code to make using it "feel good".
-
-* Appendix B Application, Platform Examples
-
-** Abstract product
+often requiring large amounts of boilerplate code to make using it "feel good".
 
 * Appendix C Additional principles to remember and live by:
 
