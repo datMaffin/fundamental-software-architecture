@@ -97,6 +97,8 @@ I.e., code must never depend on code, which in turn is depending on it.
 An example for a cyclic dependency would be: the calculation of the fuel intake is calling the code for the control valves to change it directly if it senses that something is not alright,
 while the code controlling the valve is calling directly into the fuel intake calculation to control its valves.
 
+[[./cyclicdependency.drawio.svg]]
+
 Code that has cyclic dependencies on each other is hard to understand; e.g., in this example what happens if the two implementations disagree on how the valves should be set? Who will win?
 
 The solution is to decide who will depend on whom:
@@ -278,3 +280,5 @@ However, if you like reading about this topic, here are some more resources.
 - Tiger beetle design
 - Google SWEngineering https://abseil.io/resources/swe-book/html/toc.html
 - https://stacktower.io dependency visualization
+- [[https://arc42.org/documentation/][ARC42 documentation]] for (software) architecture templates.
+  Implicitly provides ideas about what important architectural decisions are.
