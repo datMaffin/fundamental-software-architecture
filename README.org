@@ -52,20 +52,27 @@ However, in practice the trade-off of (usually slightly) more complicated code i
 When looking at software systems, it has responsibilities, i.e., things it wants to accomplish.
 It is usually good if a responsibility is implemented by a tight set of source code;
 e.g.,
-files that live in the same folder,
-code that is contained in a namespace,
-code that is contained in a class,
-etc.
+- files that live in the same folder,
+- code that is contained in a namespace,
+- code that is contained in a class,
+- etc.
 
 Note that responsibilities can be thought of in high or low abstraction;
 e.g.,
-start the rocket (high abstraction),
-flip the bit that that starts ignition (low abstraction).
-The art of architecting is to identify a responsiblity and decide how to model them in the software.
-Note that pulling out responsibilities of too low of an abstraction into separate code can make the code unnecessarily fragemented, making it hard to understand the code.
-The architect should additionally take into considerations that requirements cna change, or new requirements can come into existence:
+1. start the rocket (high abstraction),
+2. flip the bit that starts ignition (low abstraction).
+
+The art of architecting is to identify a responsiblity and decide how to model it in the software.
+If a responsibility that has low abstraction is implemented in the code using high abstraction, the result is that code can appear unnecessarily fragmented, which will make the code hard to understand.
+For example, if the "flip that bit that starts ignition" (low abstraction) is implemented with the help of varios classes in a namespace implementing a function (high abstraction),
+the resulting code will look unnecessarily complicated!
+
+The architect should additionally take into considerations that requirements can change, or new requirements can come into existence:
 therefore - usually - the responsibilites might change or increase.
-While the written code can usually never be perfectly prepared, a certain structuring of the code should help with being able to identify
+While the written code can usually never be perfectly prepared for requirement changes,
+having a nice (nice = responsibilites are implemented by a tigh set of source code) structuring of the code should help with being able to identify a sensible location for the implementation of additional responsiblities.
+The implementation of the changed requirement might need to touch a few places; if this is the case, refactoring to keep responsibilites close makes sense.
+
 
 
 (Fictional) example for responsibility to code abstraction:
@@ -82,11 +89,11 @@ While the written code can usually never be perfectly prepared, a certain struct
 
 *** Layering
 
-In addition to implementing responsibilities in the code, the stategy of of describing the layering various code / libraries / programs is an extremely popular.
-The reason for why libraries can be viewed as layers is that one of the fundamental rules is to keep the "uses" dependencies acyclic.
-Because this property, software can be described as a tree, or as layers on top of each other.
+In addition to architecting code based on responsibilities, the stategy of explicitly layering various code / libraries / programs is extremely popular.
+The reason for why software can be viewed in terms of layers (as opposed to arbitrary directed graphs) is that one of the fundamental rules is to keep the "uses" dependencies acyclic.
+Because of this acyclicity, software can be described as a tree, or as layers on top of each other.
 
-I.e., code must never depend on code, which in turn is depending on the first.
+I.e., code must never depend on code, which in turn is depending on it.
 An example for a cyclic dependency would be: the calculation of the fuel intake is calling the code for the control valves to change it directly if it senses that something is not alright,
 while the code controlling the valve is calling directly into the fuel intake calculation to control its valves.
 
@@ -108,7 +115,7 @@ The solution is to decide who will depend on whom:
 2. The valve control can depend on fuel intake.
    E.g., hte valve control will call into the fuel intake calculation such that it can decide how to control the valves.
 
-Exactly how the two systems interact can be modelled in a variety of interfaces.
+Exactly how the two systems interact can be modelled, i.e., interface, can be designed in various ways.
 Note that the interface can either be owned by either system, or even be an externally defined interface.
 Because we want to avoid acyclic dependencies, it is not allowed for interfaces to be owned by both interacting systems:
 If both systems would own the interfaces that are used for them to interact with each other, both systems would depend on each other!
@@ -127,7 +134,8 @@ In this context the form of the interface can be:
 - etc. :: there is an almost unlimited way of thinking of possible interfaces that can be used by code to communicate.
   See also Appendix A.
 
-The code architects are deciding how to layer, and closely coupled, which interfaces are needed / used for the layers to communicate.
+The code architects are deciding how to layer, and which interfaces are needed / used for the layers to communicate.
+Note that the choice of layering can influence the interface design and vice-versa.
 
 
 ** Dependency inversion
@@ -207,7 +215,7 @@ These concept should be able to be mapped onto any software.
 With these concepts in mind, the resulting software should already be pretty scalable in terms of complexity and people working on it.
 Note that the whole process is often times iterative: i.e., only introduce platforms after discovering that they are needed.
 Planning everything up-front is very hard to do. If the project is small: just start.
-If the project is significant: prototype concepts and decide based on the experience with the prototype for good boundary layer between the Application and Platform.
+If the project is significant: prototype concepts and decide based on the experience with the prototype for which responsibilities need to be mapped on which layer.
 
 * Appendix A Interfaces
 
