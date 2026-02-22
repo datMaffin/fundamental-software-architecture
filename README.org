@@ -245,6 +245,14 @@ E.g., a pure C++ programming environment where everything is always re-compiled 
 If different programming environments want to interface with each other, more generic or complicated interface formats need to be used,
 often requiring large amounts of boilerplate code to make using it "feel good".
 
+* Appendix B Example weather program
+
+Attached to this repository is a program that reads and then shows weather information.
+- [[./simple_weather.cr][Simple straight forward implementation]]
+- [[./weather_with_core.cr][Implementation that has a structure as if worked on by a large team]]
+
+Note that they also contain extensive written text giving more of a background.
+
 * Appendix C Additional principles to remember and live by:
 
 ** KISS
