@@ -71,7 +71,9 @@ The architect should additionally take into considerations that requirements can
 therefore - usually - the responsibilites might change or increase.
 While the written code can usually never be perfectly prepared for requirement changes,
 having a nice (nice = responsibilites are implemented by a tigh set of source code) structuring of the code should help with being able to identify a sensible location for the implementation of additional responsiblities.
-The implementation of the changed requirement might need to touch a few places; if this is the case, refactoring to keep responsibilites close makes sense.
+The implementation of the changed requirement might need to touch a few places; if this is the case, refactoring to keep responsibilites close might make sense.
+Often times a set of responsibilities are too much intermingled: they are effectively making it impossible to have every responsiblity closely together.
+The decision which responsibility to implement scattered (i.e., not closely together), while keeping the other responsibilities together is also a task for an architect.
 
 
 
