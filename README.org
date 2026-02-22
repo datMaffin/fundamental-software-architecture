@@ -252,6 +252,13 @@ often requiring large amounts of boilerplate code to make using it "feel good".
 Attached to this repository is a program that reads and then shows weather information.
 - [[./simple_weather.cr][Simple straight forward implementation]]
 - [[./weather_with_core.cr][Implementation that has a structure as if worked on by a large team]]
+  Note that this implementation has fairly strict ideas of where certain responsibilities will end up!
+  E.g.,
+  * Reading out the config file, inside Core.
+  * Reading / presenting weather data is fairly loose; for each drivers can be implemented to do it.
+  * Loop for fetching information and formwarding it to the display, inside Core.
+    
+  Changing the location of these responsibilities after-the-fact would necessitate work-intensive rework with the danger of a lot of merge-conflicts if a lot of teams are currently working on the software.
 
 Note that they also contain extensive written text giving more of a background.
 
