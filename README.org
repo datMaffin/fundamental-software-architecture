@@ -206,13 +206,16 @@ When describing the building block view of a specific software, one starts with 
 Each of those systems should at most consist of about about 7 systems again, etc.
 (Excluding basic dependencies that are part of the base system upon which everything is built.)
 
+One of the systems contains 40 different buttons that look different but all implement the same interface.
+(Collections of similar working code can be bundled.)
+
 **** Code
 
 There should only be 7 systems that are injected via dependency injection in a given class.
 (Not counting systems that are very fundamental and basically used everyhwere.)
 
 If there are too many dependencies,
-Facades can be introduced that bundle systems and provide a more easily useable system.
+Facades can be introduced that bundle systems and provide a more easily useable (super-)system.
 
 * Conclusion
 
