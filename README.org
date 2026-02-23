@@ -117,7 +117,7 @@ To prevent cyclic dependencies it is necessary to decide who will depend on whom
    The callable object implementing this interface could then be registered with the fuel-intake-valve.
    The fuel-intake-valve control would then be able to request a calculation-of-the-fuel-intake whenever it wants.
 
-   The alternative implementation is an example for "Dependency Inversion"; further below a dedicated section for describes this concept in more detail.
+   The alternative implementation is an example for "Dependency Inversion"; further below a dedicated section describes this concept in more detail.
 2. The fuel-intake-valve control can depend on calculation-of-the-fuel-intake.
    E.g., thee fuel-intake-valve control will call into the calculation-of-the-fuel-intake such that it can decide how to control the valves.
 
