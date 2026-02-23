@@ -208,7 +208,7 @@ Fully-functional code has the advantage of being easier to document, understand 
 ** Rule of 7
 
 Humans can generally hold about 7 things in their mind at the same time.
-Translated into the software world, this means that we should ensure that code should not depend/interact with more then 7 other separate systems.
+Translated into the software world, this means that we should ensure that code should not depend/interact with more than 7 other separate systems.
 Fundamental software entities (e.g., standard library, or systems that are used all over the codebase) are not counted.
 Additionally, a single "system" can also be a collection of similar working code; make sure that it is easy to see when something belongs to such a system, e.g., bundling them into a common namespace.
 
