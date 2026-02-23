@@ -166,16 +166,29 @@ these frameworks generally allow the registering of services implementing interf
 Component packages can be loaded, which will fill the registry of the component framework providing a way to instantiate services that implement a specific interface.
 
 
-** Managing side effects
+** Managing side-effects
 
 Software that has no side-effects is useless.
 The side-effects are the end-all of software.
 It therefore is important to identify and understand the side-effect of the code.
 
-The general guideline is that side-effects shall happen as high as possible in the call stack.
+A side-effect in the software world is defined as an operation that has observable effect other than reading its arguments and returning a value.
+Examples for side-effects are:
+- changing a global variable
+- mutating an argument in a way that is visible from the "outside"
+- triggering change in the real world like triggering movement or displaying something
+- reading information from the real world in the form of working down streams of data
+- etc.
+
+Closely related is the concept of "pure" and "impure" operations.
+Every operation that has side-effects is "impure".
+Additionally, every operation that depends on the outside-world, e.g., randomness, time, sensor data, or mutable global data is also "impure".
+
+The general guideline is that impure (especially side-effect) operations shall happen as high as possible in the call stack.
 This is helping with understanding what specific code (e.g., a function) is trying to do;
 if the side-effect of a function is hidden in a helper function of a helper function, a side-effect can easily be missed.
-While documenting the function can help, documentation can be wrong, incomplete or just plain missing, while the source code is the truth.
+Hiding operations that depend on the outside-world can similarly cause confusion.
+While documenting the function can help, documentation can be wrong, incomplete or just plain missing, while the source code itself is - by definition - the truth.
 
 *** Related: command pattern
 
