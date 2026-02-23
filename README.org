@@ -188,7 +188,8 @@ The general guideline is that impure (especially side-effect) operations shall h
 This is helping with understanding what specific code (e.g., a function) is trying to do;
 if the side-effect of a function is hidden in a helper function of a helper function, a side-effect can easily be missed.
 Hiding operations that depend on the outside-world can similarly cause confusion.
-While documenting the function can help, documentation can be wrong, incomplete or just plain missing, while the source code itself is - by definition - the truth.
+
+While documenting the operations can help, documentation can be wrong, incomplete or just plain missing, while the source code itself is - by definition - the truth.
 
 *** Related: command pattern
 
