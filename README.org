@@ -4,39 +4,39 @@
 
 * Goal
 
-This document aims to communicate the fundamentals of software architecture in a succinct but easy to understand way.
+This document aims to communicate the fundamentals of software architecture in a succinct and easy to understand way.
 
 * (Optional) Introduction
 
-If one is already very experienced with creating software, this document might seem unnecessary or obvious.
+If one is already (very) experienced in the field of software, this document might seem unnecessary or obvious.
 However, I do think it is important to try to express what I have learned over the years.
 I do not claim that this is the one valid way to look at software architecture.
-However, I do hope it is a useful view.
+However, I do feel it is a universal and hopefully useful point of view.
 
 The topic of software architecture often-times feels impossible to put into words:
 making it hard to write down the fundamentals.
-Long books exist that write about this topic.
-However, they are trying to cover the topic to extensive, e.g., they are trying to go over every edge cases.
-It is too difficult to keep all the information of those resources in the active memory.
+Long books exist that about the topic of software archiecture.
+In my experience, though, they are trying to cover the topic with too much detail, e.g., describing and evaluating every edge case in detail.
+I find the content to be too difficult to keep in the active memory.
 
-This document will try to describe only very few concepts that IMHO are already sufficient to understand how "good" software is usually structured.
-"good" in the context of this document is primarily concerned with /understandability/ and /maintainability/.
+This documents goal is to describe broad concepts that are sufficient to understand how "good" software is usually structured.
+"Good" in the context of this document is concerned with /understandability/ and /maintainability/.
 
 ** Why "performance" is omitted
 
 While performance is an important part of "good" software, software performance is usually already good enough when keeping things simple.
-It can be true that a chosen architecture, which follows the details described here, can have horrible performance,
-however, in my experience this can usually be solved by looking at the specific locations that slow everything down and optimizing them.
+It can be true that a chosen architecture, which follows the details described here, can have horrible performance.
+However, in my experience, performance issues can usually be solved by looking at the specific locations that slow everything down and optimizing them.
 
-One main principle to keep in mind for good performance is to process data in batches. This is beneficial for:
+The  main principle to keep in mind for good performance is to "process data in batches". This is beneficial for:
 - sharing computation results
-  - as opposed to calculating the same thing over and over for a slightly different context
+  - as opposed to calculating the same thing over and over (for a slightly different context)
 - hardware access can be combined
   - as opposed to doing every hardware access sequentially
-- if the data to be processed and the result memory are coherent memory blocks, CPU caches work efficient
-  - as opposed to data and results being scattered all over the system requiring the CPU to stop and wait for fetching the data into the cache
+- if the data to be processed and the result memory are coherent memory blocks, CPU caches work efficiently
+  - as opposed to data and results being scattered all over the memory requiring the CPU to stop and wait for fetching the data into the cache
 - parallelization can be introduced more easily to work on multiple elements of the batch in parallel
-  - as opposed to doing everything sequentially
+  - as opposed to being forced doing everything sequentially
 - etc.
 
 Oftentimes the various performance improvements introduce additional complexity into the software architecture and code.
@@ -49,7 +49,12 @@ However, in practice the trade-off of (usually slightly) more complicated code i
 
 *** Responsibilities
 
-When looking at software systems, it has responsibilities, i.e., things it wants to accomplish.
+When looking at a software system, it has responsibilities, i.e., things it wants to accomplish.
+Those responsibilities can be thought of in high or low abstraction;
+e.g.,
+1. start the rocket (high abstraction),
+2. flip the bit that starts ignition (low abstraction).
+
 It is usually good if a responsibility is implemented by a tight set of source code;
 e.g.,
 - files that live in the same folder,
@@ -57,25 +62,19 @@ e.g.,
 - code that is contained in a class,
 - etc.
 
-Note that responsibilities can be thought of in high or low abstraction;
-e.g.,
-1. start the rocket (high abstraction),
-2. flip the bit that starts ignition (low abstraction).
-
 The art of architecting is to identify a responsiblity and decide how to model it in the software.
-If a responsibility that has low abstraction is implemented in the code using high abstraction, the result is that code can appear unnecessarily fragmented, which will make the code hard to understand.
-For example, if the "flip that bit that starts ignition" (low abstraction) is implemented with the help of varios classes in a namespace implementing a function (high abstraction),
-the resulting code will look unnecessarily complicated!
+If a responsibility that has low abstraction is implemented in the software using high abstraction code concepts, the result is that code can appear unnecessarily fragmented, which will make the code hard to understand.
+For example, if the "flip that bit that starts ignition" (low abstraction) is implemented with the help of various classes in a namespace implementing a function (high abstraction),
+the resulting code will be unnecessarily complicated to understand!
 
 The architect should additionally take into considerations that requirements can change, or new requirements can come into existence:
-therefore - usually - the responsibilites might change or increase.
+therefore - usually - accept that the responsibilites might increase or change.
 While the written code can usually never be perfectly prepared for requirement changes,
-having a nice (nice = responsibilites are implemented by a tigh set of source code) structuring of the code should help with being able to identify a sensible location for the implementation of additional responsiblities.
-The implementation of the changed requirement might need to touch a few places; if this is the case, refactoring to keep responsibilites close might make sense.
-Often times a set of responsibilities are too much intermingled: they are effectively making it impossible to have every responsiblity closely together.
-The decision which responsibility to implement scattered (i.e., not closely together), while keeping the other responsibilities together is also a task for an architect.
-
-
+having a nice (nice = responsibilites are implemented by a tight set of source code) structuring of the code should help with being able to identify a sensible location for the implementation of additional responsiblities.
+The implementation of the additional/changed requirement might need to touch a few places; if this is the case, refactoring to keep responsibilites close might make sense.
+Often times a set of responsibilities are intertwined: it is often effectively impossible to have every responsiblity closely together.
+In this caes, the decision of which responsibility will be implemented scattered (i.e., not closely together),
+while keeping the other responsibilities together, is an important task of architecting.
 
 (Fictional) example for responsibility to code abstraction:
 - /Responsiblity/ :: /code abstraction/
@@ -92,55 +91,59 @@ The decision which responsibility to implement scattered (i.e., not closely toge
 *** Layering
 
 In addition to architecting code based on responsibilities, the stategy of explicitly layering various code / libraries / programs is extremely popular.
-The reason for why software can be viewed in terms of layers (as opposed to arbitrary directed graphs) is that one of the fundamental rules is to keep the "uses" dependencies acyclic.
+The reason for why software can be viewed in terms of layers (as opposed to arbitrary directed graphs) is that a fundamental rule is to keep the "uses" dependencies acyclic.
 Because of this acyclicity, software can be described as a tree, or as layers on top of each other.
 
 I.e., code must never depend on code, which in turn is depending on it.
-An example for a cyclic dependency would be: the calculation of the fuel intake is calling the code for the control valves to change it directly if it senses that something is not alright,
-while the code controlling the valve is calling directly into the fuel intake calculation to control its valves.
+An example for a cyclic dependency would be: the calculation-of-the-fuel-intake is calling the code to control the fuel-intake-valves if it senses that something is not alright,
+while the code controlling the fuel-intake-valve is calling the calculation-of-the-fuel to control its valves.
 
 [[./cyclicdependency.drawio.svg]]
 
-Code that has cyclic dependencies on each other is hard to understand; e.g., in this example what happens if the two implementations disagree on how the valves should be set? Who will win?
+Code that has cyclic dependencies on each other is hard to understand!
+In this example one can wonder what happens if the two implementations disagree on how the valves should be set?
+Who will have the last word controlling the valves?
 
-The solution is to decide who will depend on whom:
-1. The fuel intake can depend on the valve control.
+To prevent cyclic dependencies it is necessary to decide who will depend on whom:
+1. The calculation-of-the-fuel-intake can depend on the fuel-intake-valve.
    
-   E.g., the fuel intake calculation will call into the valve control and pass along its values with a way to communicate extreme situations.
+   E.g., the calculation-of-the-fuel-intake will call into the fuel-intake-valve control and pass along its values with a way to communicate extreme situations.
    
-   However, this does not really "feel" like a natural way; the fuel intake calculation should probably not be responsible for triggering when exactly the valves should change.
+   However, this does not really "feel" like a natural way; the calculation-of-the-fuel-intake should probably not be responsible for triggering when exactly the valves should change.
    
    An alternative implementation would be that the fuel intake calculation will encapsulate itself into a callable object.
-   The interface of the callable object would be provided by the valve control.
-   This callable object could then be registered with the valve control.
-   The valve control would then be able to request a fuel intake calculation whenever it wants.
+   The interface of the callable object would be known to the fuel-intake-valve.
+   It is important that this interface is not "owned" by the calculation-of-the-fuel-intake.
+   The callable object implementing this interface could then be registered with the fuel-intake-valve.
+   The fuel-intake-valve control would then be able to request a calculation-of-the-fuel-intake whenever it wants.
 
-   The alternative is an example for "Dependency inversion"; there is a dedicated section for it.
-2. The valve control can depend on fuel intake.
-   E.g., hte valve control will call into the fuel intake calculation such that it can decide how to control the valves.
+   The alternative implementation is an example for "Dependency Inversion"; further below a dedicated section for describes this concept in more detail.
+2. The fuel-intake-valve control can depend on calculation-of-the-fuel-intake.
+   E.g., thee fuel-intake-valve control will call into the calculation-of-the-fuel-intake such that it can decide how to control the valves.
 
-Exactly how the two systems interact can be modelled, i.e., interface, can be designed in various ways.
-Note that the interface can either be owned by either system, or even be an externally defined interface.
-Because we want to avoid acyclic dependencies, it is not allowed for interfaces to be owned by both interacting systems:
+Exactly how the two systems interact, i.e., interface, can be modelled/designed in various ways.
+Note that the interface can either be defined and owned by either system, or even be an externally defined.
+Because we want to avoid cyclic dependencies, it is not allowed for interfaces to be owned by both interacting systems:
 If both systems would own the interfaces that are used for them to interact with each other, both systems would depend on each other!
 
-The interface to be used depends on how the two systems want to interact.
-In this context the form of the interface can be:
-- C(++)-ABI via a symbol name :: that is linked; directly calling the function.
+[[./layering.drawio.svg]]
+
+The interface to be used depends on how the two systems want/need to interact.
+In this context the form of the interface could be:
+- C(++)-ABI via a symbol name :: that is a linker will connect objects; directly calling the function.
   In the source code this would mean that the caller directly calls the implementation.
 - Providing function pointers :: e.g., via structs that are filled out and passed along, or virtual function table that usually underly the various "interface" concepts that exist in programming languages.
-- Writing / reading a file :: the format of the file is usually well defined
-- Calling a program :: stdout and stdin could be used to communicate data
-- Making an http request or providing an http server :: similar would be other protocols based on sockets.
+- Writing / reading a file :: the format and location of the files involed needs to be well defined.
+- Calling a program :: stdout and stdin can be used to communicate information and trigger each other.
+- Making an http request or providing an http server :: other than http various other protocols exist that can be used for socket based communication.
   The sockets can either transport the data between processes running on the same computer, or between processes running on different computers.
-  (In theory also different threads could communicate via a socket; however, usually for threads in a process, there are more efficient ways to communicate.)
+  (In theory also different threads could communicate via a socket; however, threads sharing a process have more efficient ways to communicate.)
 - Write / read a global variable in the process :: all the running code within the code can see the global variables.
 - etc. :: there is an almost unlimited way of thinking of possible interfaces that can be used by code to communicate.
-  See also "Appendix A Interfaces".
+  More examples can also be found in "Appendix A Interfaces" below.
 
-The code architects are deciding how to layer, and which interfaces are needed / used for the layers to communicate.
+"Architecting code" means deciding how to layer software and/or code and deciding on the interface design.
 Note that the choice of layering can influence the interface design and vice-versa.
-
 
 ** Dependency inversion
 
